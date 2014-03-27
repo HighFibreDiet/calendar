@@ -15,7 +15,8 @@ def menu
   puts "Type 'add' to add a new event."
   puts "Type 'edit' to edit an existing event"
   puts "Type 'list' to see all of your upcoming events."
-  puts "Type 'options' to see more options."
+  puts "Type 'delete' to delete an event"
+  puts "Type 'options' to see more viewing options."
   puts "Type 'exit' to exit the Calendar Machine."
 
   menu_choice = gets.chomp
@@ -25,13 +26,32 @@ def menu
   when 'edit'
     edit_event
   when 'list'
-    list_events(true)
+    puts "Only future events? (y/n)"
+    result = gets.chomp.downcase
+    if result == 'y'
+      list_events(true)
+    else
+      list_events(false)
+    end
+  when 'delete'
+    delete_event
   when 'options'
     options_menu
   when 'exit'
     exit
   else
     puts "Not a valid choice."
+  end
+end
+
+def delete_event
+  list_events(false)
+  puts "\nEnter the id of the event you would like to delete, or enter to cancel."
+  list_choice = gets.chomp
+  if list_choice != ''
+    event_to_delete = Event.find(list_choice.to_i)
+    event_to_delete.destroy
+    puts "\nThe event #{event_to_delete.description} was deleted."
   end
 end
 
@@ -109,14 +129,10 @@ def list_events(flag)
   events_in_order = Event.order(:start_datetime, :end_datetime)
   puts "\n\n"
   events_in_order.each do |event|
+    length = event.description.length
+    padding = 25 - length
+    event_id_format = event.id < 10 ? "#{0}#{event.id}" : "#{event.id}"
     if (event.start_datetime >= DateTime.now) && flag
-      length = event.description.length
-      padding = 25 - length
-      if event.id < 10
-        event_id_format = "#{0}#{event.id}"
-      else
-        event_id_format = "#{event.id}"
-      end
       puts "ID #{event_id_format}: #{event.description}: #{" "*padding} #{event.start_datetime.strftime("%m/%d/%y at %I:%M%p")} to #{event.end_datetime.strftime("%m/%d/%y at %I:%M%p")}.\n"
     elsif !flag
       puts "ID #{event_id_format}: #{event.description}: #{" "*padding} #{event.start_datetime.strftime("%m/%d/%y at %I:%M%p")} to #{event.end_datetime.strftime("%m/%d/%y at %I:%M%p")}.\n"
@@ -151,11 +167,19 @@ end
 def view_by_month
   today = DateTime.now
   puts "\n\n*******#{today.strftime('%B')} Events********\n\n"
-  month_events = Event.by_month(today.month)
-  puts month_events.first.description
+  month_events = Event.where('extract(month from start_datetime) = ?', today.month)
+  month_events.each { |event| puts event.description }
 end
 
 def view_by_week
+  puts "\n\n********This Week's Events********\n\n"
+  today = Date.today
+  # day_of_week = today.wday
+  # starting_date = today - day_of_week
+  # ending_date = today + (7 - day_of_week)
+  # week_events = Event.where(:start_datetime => starting_date..ending_date)
+  week_events = Event.where("to_char(start_datetime, 'IW') = ?", today.cweek.to_s)
+  week_events.each { |event| puts event.description}
 end
 
 def view_by_day
