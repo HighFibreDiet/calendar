@@ -17,8 +17,8 @@ def menu
   puts "Type 'list' to see all of your upcoming events."
   puts "Type 'delete' to delete an event"
   puts "Type 'options' to see more viewing options."
-  puts "Type 'exit' to exit the Calendar Machine."
-
+  puts "Type 'exit' to exit the Calendar Machine.\n\n"
+  print ">"
   menu_choice = gets.chomp
   case menu_choice
   when 'add'
@@ -146,16 +146,16 @@ def options_menu
   puts "\n\nType 'month' to see events for the current month."
   puts "Type 'week' to see events for the current week."
   puts "Type 'today' to see today's events."
-  puts "Type 'main' to return to the main menu."
+  puts "Type 'main' to return to the main menu.\n\n"
   print ">"
   option_choice = gets.chomp
   case option_choice
   when 'month'
-    view_by_month
+    view_by_month(0)
   when 'week'
-    view_by_week
+    view_by_week(0)
   when 'today'
-    view_by_day
+    view_by_day(0)
   when 'main'
     main
   else
@@ -164,25 +164,74 @@ def options_menu
   end
 end
 
-def view_by_month
+def view_by_month(i)
   today = DateTime.now
-  puts "\n\n*******#{today.strftime('%B')} Events********\n\n"
-  month_events = Event.where('extract(month from start_datetime) = ?', today.month)
+  months = {1 => "January"}
+  puts "\n\n*******#{I18n.t("date.month_names")[today.month + i]} Events********\n\n"
+  month_events = Event.where('extract(month from start_datetime) = ?', (today.month + i))
   month_events.each { |event| puts event.description }
+  puts "\n\n\n"
+  puts "Type 'next' to view the next month."
+  puts "Type 'previous' to view the previous month."
+  puts "Type 'exit' to return to main menu."
+  view_choice = gets.chomp
+  case view_choice
+  when 'next'
+    view_by_month(i+1)
+  when 'previous'
+    view_by_month(i-1)
+  when 'exit'
+    menu
+  else
+    puts "Not a valid input."
+    view_by_month(i)
+  end
 end
 
-def view_by_week
-  puts "\n\n********This Week's Events********\n\n"
+def view_by_week(i)
   today = Date.today
-  # day_of_week = today.wday
-  # starting_date = today - day_of_week
-  # ending_date = today + (7 - day_of_week)
-  # week_events = Event.where(:start_datetime => starting_date..ending_date)
-  week_events = Event.where("to_char(start_datetime, 'IW') = ?", today.cweek.to_s)
+  puts "\n\n********Events for Week #{today.cweek + i}********\n\n"
+  week_events = Event.where("to_char(start_datetime, 'IW') = ?", (today.cweek + i).to_s)
   week_events.each { |event| puts event.description}
+  puts "\n\n\n"
+  puts "Type 'next' to view the next week."
+  puts "Type 'previous' to view the previous week."
+  puts "Type 'exit' to return to main menu."
+  view_choice = gets.chomp
+  case view_choice
+  when 'next'
+    view_by_week(i+1)
+  when 'previous'
+    view_by_week(i-1)
+  when 'exit'
+    menu
+  else
+    puts "Not a valid input."
+    view_by_week(i)
+  end
 end
 
-def view_by_day
+def view_by_day(i)
+  puts "\n\n********Events for #{day_one + i}********\n\n"
+  day_one = Date.today
+  week_events = Event.where(:start_datetime => (day_one + i)...(day_one + i + 1))
+  week_events.each { |event| puts event.description}
+  puts "\n\n\n"
+  puts "Type 'next' to view the next day."
+  puts "Type 'previous' to view the previous day."
+  puts "Type 'exit' to return to main menu."
+  view_choice = gets.chomp
+  case view_choice
+  when 'next'
+    view_by_day(i+1)
+  when 'previous'
+    view_by_day(i-1)
+  when 'exit'
+    menu
+  else
+    puts "Not a valid input."
+    view_by_day(i)
+  end
 end
 
 def get_start_date
