@@ -42,9 +42,9 @@ def add_event
   new_event = Event.new({:description => description, :location => location, :start_datetime => start_datetime, :end_datetime => end_datetime})
 
   if new_event.save
-    puts "#{new_event.description} has been successfully added to the Calendar Machine."
+    puts "'#{new_event.description}' has been successfully added to the Calendar Machine."
   else
-    puts "This event was not successfully created. The following errors occurred: "
+    puts "WARNING! This event was NOT successfully created. The following errors occurred: "
     new_event.errors.full_messages.each { |message| puts message }
     add_event
   end
