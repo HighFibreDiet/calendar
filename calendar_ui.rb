@@ -164,11 +164,13 @@ def options_menu
   end
 end
 
+#Move to model
 def view_by_month(i)
   today = DateTime.now
   months = {1 => "January"}
   puts "\n\n*******#{I18n.t("date.month_names")[today.month + i]} Events********\n\n"
   month_events = Event.where('extract(month from start_datetime) = ?', (today.month + i))
+  #month_events = Event.events_by_month(i)
   month_events.each { |event| puts event.description }
   puts "\n\n\n"
   puts "Type 'next' to view the next month."
@@ -188,10 +190,12 @@ def view_by_month(i)
   end
 end
 
+#move to model
 def view_by_week(i)
   today = Date.today
   puts "\n\n********Events for Week #{today.cweek + i}********\n\n"
   week_events = Event.where("to_char(start_datetime, 'IW') = ?", (today.cweek + i).to_s)
+  #week_events = Event.events_by_week(i)
   week_events.each { |event| puts event.description}
   puts "\n\n\n"
   puts "Type 'next' to view the next week."
@@ -211,10 +215,12 @@ def view_by_week(i)
   end
 end
 
+#move to model
 def view_by_day(i)
   puts "\n\n********Events for #{day_one + i}********\n\n"
   day_one = Date.today
   week_events = Event.where(:start_datetime => (day_one + i)...(day_one + i + 1))
+  #week_events = Event.events_by_week(i)
   week_events.each { |event| puts event.description}
   puts "\n\n\n"
   puts "Type 'next' to view the next day."
